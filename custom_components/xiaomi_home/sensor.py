@@ -120,6 +120,16 @@ class Sensor(MIoTPropertyEntity, SensorEntity):
             self._attr_icon = spec.icon
 
     @property
+    def extra_state_attributes(self):
+        """Expose the complete MS3001 body property for HA automations."""
+        attributes = super().extra_state_attributes
+        if (self.miot_device.model == 'yunmai.scales.ms3001'
+                and self.service.iid == 6 and self.spec.iid == 1
+                and isinstance(self._value, str) and self._value):
+            return {**(attributes or {}), 'raw_body_composition': self._value}
+        return attributes
+
+    @property
     def native_value(self) -> Any:
         """Return the current value of the sensor."""
         if self._value_range and isinstance(self._value, (int, float)):
